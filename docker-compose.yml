@@ -1,0 +1,60 @@
+version: '2.29.2'
+
+services:
+    app:
+        build: .
+        container_name: 'interview-php'
+        depends_on:
+            - db
+            - rabbitmq
+        volumes:
+            - ./:/app
+        env_file:
+            - .env
+        ports:
+            - 8081:80
+        networks:
+            - stack
+    db:
+        image: mariadb:10.8
+        container_name: 'interview-mariadb'
+        ports:
+            - "127.0.0.1:3306:3306"
+        environment:
+            - MARIADB_ROOT_PASSWORD=Cyb3rF0lks
+            - MARIADB_USER=interview-user
+            - MARIADB_PASSWORD=interview-password
+            - MARIADB_DATABASE=interview
+        volumes:
+            - ./interview-db:/var/lib/mysql
+        networks:
+            - stack
+    redis:
+        image: redis:alpine
+        container_name: 'interview_redis'
+        command: redis-server --appendonly yes
+        volumes:
+            - interview-redis:/data
+        networks:
+            - stack
+        ports:
+            - "127.0.0.1:6379:6379"
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: 'interview_rabbitmq'
+        restart: always
+        environment:
+            - RABBITMQ_DEFAULT_USER=user
+            - RABBITMQ_DEFAULT_PASS=password
+            - RABBITMQ_DEFAULT_VHOST=vhost
+        ports:
+            - "127.0.0.1:5672:5672"
+            - "15672:15672"
+        networks:
+            - stack
+networks:
+    stack:
+
+volumes:
+    interview-db:
+    interview-redis:
